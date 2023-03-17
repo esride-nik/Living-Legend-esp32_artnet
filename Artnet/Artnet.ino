@@ -31,9 +31,13 @@ boolean ConnectWifi(void)
   Serial.print("Connecting");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
-    if (i > 20){
+    Serial.print(i);
+    Serial.print(" | ");
+    Serial.println(WiFi.status());
+    // Serial.print(".");
+    if (i > 200){
       state = false;
+      ESP.restart();
       break;
     }
     i++;
@@ -54,7 +58,7 @@ boolean ConnectWifi(void)
 
 void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* data)
 {
-  // Serial.println(printf("onDmxFrame %u %u %u \n", universe, length, sequence));
+  Serial.println(printf("onDmxFrame %u %u %u \n", universe, length, sequence));
   // Serial.println(printf("%c", data));
   sendFrame = 1;
   // set brightness of the whole strip 
@@ -77,9 +81,41 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
   FastLED.show();
 }
 
+void ScanWifi() {
+
+  // WiFi.scanNetworks will return the number of networks found
+  int n = WiFi.scanNetworks();
+  Serial.println("scan done");
+  if (n == 0) {
+      Serial.println("no networks found");
+  } else {
+    Serial.print(n);
+    Serial.println(" networks found");
+    for (int i = 0; i < n; ++i) {
+      // Print SSID and RSSI for each network found
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(WiFi.SSID(i));
+      Serial.print(" (");
+      Serial.print(WiFi.RSSI(i));
+      Serial.print(")");
+      Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*");
+      delay(10);
+    }
+  }
+  Serial.println("");  
+}
+
 void setup()
 {
   Serial.begin(115200);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+
+  ScanWifi();
+
   ConnectWifi();
   artnet.begin();
   FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, numLeds);
