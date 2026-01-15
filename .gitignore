@@ -1,5 +1,5 @@
-secrets.h
-/secrets.h_ssids
+/Artnet/secrets.h
+/Artnet/secrets_Chris.h
 /hardware
 c_cpp_properties.json
 arduino.json
